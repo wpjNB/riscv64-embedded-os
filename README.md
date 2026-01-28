@@ -103,7 +103,11 @@ make debug
 
 ## 📖 文档
 
-详细文档请查看 `docs/` 目录。
+详细文档请查看 `docs/` 目录：
+
+- [构建指南 (BUILD.md)](docs/BUILD.md) - 如何编译和运行项目
+- [系统架构 (ARCHITECTURE.md)](docs/ARCHITECTURE.md) - 系统架构和设计文档
+- [OpenSBI 参考 (OPENSBI.md)](docs/OPENSBI.md) - OpenSBI 引导程序说明
 
 ## 🤝 贡献
 
