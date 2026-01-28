@@ -15,7 +15,7 @@ USER_DIR := user
 DRIVER_DIR := drivers
 
 # Compiler flags
-CFLAGS := -march=rv64imac -mabi=lp64 -mcmodel=medany
+CFLAGS := -march=rv64imac_zicsr -mabi=lp64 -mcmodel=medany
 CFLAGS += -Wall -Wextra -O2 -g
 CFLAGS += -fno-builtin -nostdlib -nostartfiles
 CFLAGS += -fno-common -ffunction-sections -fdata-sections
@@ -23,7 +23,7 @@ CFLAGS += -I$(KERNEL_DIR) -I$(DRIVER_DIR) -Iinclude
 
 # Linker flags
 LDFLAGS := -nostdlib -static
-LDFLAGS += -Wl,--gc-sections
+LDFLAGS += --gc-sections
 
 # Qemu settings
 QEMU := qemu-system-riscv64
