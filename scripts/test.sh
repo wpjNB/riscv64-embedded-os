@@ -72,6 +72,13 @@ else
     exit 1
 fi
 
+# Test 2.5: Check unbuffer availability
+if ! command -v unbuffer &> /dev/null; then
+    print_failure "unbuffer not found (required for QEMU output capture)"
+    echo "Please install: sudo apt-get install expect"
+    exit 1
+fi
+
 # Test 3: Clean build
 print_test "Clean Build Directory"
 if make clean > /dev/null 2>&1; then
@@ -130,10 +137,17 @@ fi
 print_test "Kernel Execution in QEMU"
 echo "Running kernel in QEMU for 5 seconds..."
 # Use unbuffer to capture output from QEMU
+# Note: timeout will kill QEMU after 5 seconds, this is expected behavior
 timeout 5 unbuffer qemu-system-riscv64 -machine virt -nographic -bios none \
     -m 128M -smp 1 -kernel build/kernel.elf > /tmp/qemu_output.txt 2>&1 || true
 
-if [ -f /tmp/qemu_output.txt ]; then
+# Check if output was captured
+if [ ! -s /tmp/qemu_output.txt ]; then
+    print_failure "No QEMU output captured (file empty or missing)"
+    echo "QEMU may have failed to start or produce output"
+    # Continue with other tests but mark this as failed
+    TOTAL=$((TOTAL - 1))  # Adjust since we already incremented in print_test
+elif [ -f /tmp/qemu_output.txt ]; then
     # Check for expected output
     if grep -q "RISC-V 64-bit Embedded OS" /tmp/qemu_output.txt; then
         print_success "Kernel banner displayed"
@@ -171,13 +185,10 @@ if [ -f /tmp/qemu_output.txt ]; then
         print_failure "Memory test not completed"
     fi
     
-    echo
     echo "QEMU output:"
     echo "----------------------------------------"
     cat /tmp/qemu_output.txt
     echo "----------------------------------------"
-else
-    print_failure "No QEMU output captured"
 fi
 
 # Test 7: Check for proper memory layout

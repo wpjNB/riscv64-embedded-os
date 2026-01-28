@@ -113,6 +113,10 @@ make debug
 运行完整的测试套件以验证系统功能：
 
 ```bash
+# 首先确保安装了 expect 包（提供 unbuffer 命令）
+sudo apt-get install expect
+
+# 运行测试
 ./scripts/test.sh
 ```
 
