@@ -112,10 +112,17 @@ make debug
 
 详细文档请查看 `docs/` 目录：
 
-- [构建指南 (BUILD.md)](docs/BUILD.md) - 如何编译和运行项目
-- [开发指南 (DEVELOPMENT.md)](docs/DEVELOPMENT.md) - 开发、调试和贡献指南
-- [系统架构 (ARCHITECTURE.md)](docs/ARCHITECTURE.md) - 系统架构和设计文档
-- [OpenSBI 参考 (OPENSBI.md)](docs/OPENSBI.md) - OpenSBI 引导程序说明
+### 中文文档
+- [构建指南 (BUILD.zh.md)](docs/BUILD.zh.md) - 如何编译和运行项目
+- [开发指南 (DEVELOPMENT.zh.md)](docs/DEVELOPMENT.zh.md) - 开发、调试和贡献指南
+- [系统架构 (ARCHITECTURE.zh.md)](docs/ARCHITECTURE.zh.md) - 系统架构和设计文档
+- [OpenSBI 参考 (OPENSBI.zh.md)](docs/OPENSBI.zh.md) - OpenSBI 引导程序说明
+
+### English Documentation
+- [Build Guide (BUILD.md)](docs/BUILD.md) - How to compile and run the project
+- [Development Guide (DEVELOPMENT.md)](docs/DEVELOPMENT.md) - Development, debugging and contribution guide
+- [System Architecture (ARCHITECTURE.md)](docs/ARCHITECTURE.md) - System architecture and design documentation
+- [OpenSBI Reference (OPENSBI.md)](docs/OPENSBI.md) - OpenSBI bootloader documentation
 
 ## 🤝 贡献
 
