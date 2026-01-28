@@ -1,7 +1,7 @@
 #ifndef _PLIC_H
 #define _PLIC_H
 
-#include "../types.h"
+#include "../../kernel/types.h"
 
 /* PLIC initialization */
 void plic_init(void);

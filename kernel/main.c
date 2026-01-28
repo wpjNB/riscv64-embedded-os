@@ -5,6 +5,9 @@
 #include "trap/trap.h"
 #include "../drivers/uart/uart.h"
 
+#define SHELL_BUFFER_SIZE 128
+#define QEMU_VIRT_TEST 0x100000  /* QEMU virt test device for poweroff */
+
 /* Banner */
 static void print_banner(void) {
     printf("\n");
@@ -58,7 +61,7 @@ static void run_shell(void) {
     printf("[SHELL] Starting simple shell\n");
     printf("Type 'help' for available commands\n");
     
-    char buffer[128];
+    char buffer[SHELL_BUFFER_SIZE];
     int pos = 0;
     
     while (1) {
@@ -107,14 +110,14 @@ static void run_shell(void) {
                    buffer[3] == 't' && buffer[4] == '\0') {
             test_memory();
         } else if (buffer[0] == 'e' && buffer[1] == 'c' && buffer[2] == 'h' && 
-                   buffer[3] == 'o' && buffer[4] == ' ') {
+                   buffer[3] == 'o' && pos > 4 && buffer[4] == ' ') {
             printf("%s\n", buffer + 5);
         } else if (buffer[0] == 'r' && buffer[1] == 'e' && buffer[2] == 'b' && 
                    buffer[3] == 'o' && buffer[4] == 'o' && buffer[5] == 't' && 
                    buffer[6] == '\0') {
             printf("Rebooting...\n");
-            /* On QEMU, we can exit by writing to a special address */
-            *(volatile uint32_t*)0x100000 = 0x5555; /* QEMU poweroff */
+            /* QEMU virt test device - writing 0x5555 causes QEMU to exit */
+            *(volatile uint32_t*)QEMU_VIRT_TEST = 0x5555;
         } else {
             printf("Unknown command: %s\n", buffer);
             printf("Type 'help' for available commands\n");

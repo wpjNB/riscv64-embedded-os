@@ -2,6 +2,8 @@
 #include "../printf.h"
 #include "../../drivers/uart/uart.h"
 
+#define SYSCALL_ERROR ((uint64_t)-1)  /* Error return value (UINT64_MAX) */
+
 void syscall_init(void) {
     /* Nothing to initialize for now */
 }
@@ -36,13 +38,13 @@ uint64_t syscall_handler(uint64_t num, uint64_t arg0, uint64_t arg1, uint64_t ar
         case SYS_FORK: {
             /* Fork not implemented yet */
             printf("[SYSCALL] fork() not implemented\n");
-            return -1;
+            return SYSCALL_ERROR;
         }
         
         case SYS_EXEC: {
             /* Exec not implemented yet */
             printf("[SYSCALL] exec() not implemented\n");
-            return -1;
+            return SYSCALL_ERROR;
         }
         
         case SYS_EXIT: {
@@ -53,6 +55,6 @@ uint64_t syscall_handler(uint64_t num, uint64_t arg0, uint64_t arg1, uint64_t ar
         
         default:
             printf("[SYSCALL] Unknown syscall: %u\n", (uint32_t)num);
-            return -1;
+            return SYSCALL_ERROR;
     }
 }

@@ -1,12 +1,14 @@
 #include "process.h"
 #include "../mm/mm.h"
 
-static process_t proc_table[64];
-static int next_pid = 1;
+#define MAX_PROCESSES 64
+
+static process_t proc_table[MAX_PROCESSES];
+static uint64_t next_pid = 1;
 
 void process_init(void) {
     /* Initialize process table */
-    for (int i = 0; i < 64; i++) {
+    for (int i = 0; i < MAX_PROCESSES; i++) {
         proc_table[i].state = PROC_UNUSED;
         proc_table[i].pid = 0;
     }
@@ -14,7 +16,7 @@ void process_init(void) {
 
 process_t* process_alloc(void) {
     /* Find free slot */
-    for (int i = 0; i < 64; i++) {
+    for (int i = 0; i < MAX_PROCESSES; i++) {
         if (proc_table[i].state == PROC_UNUSED) {
             proc_table[i].pid = next_pid++;
             proc_table[i].state = PROC_RUNNABLE;

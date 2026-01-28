@@ -1,7 +1,7 @@
 #ifndef _UART_H
 #define _UART_H
 
-#include "../types.h"
+#include "../../kernel/types.h"
 
 /* UART initialization */
 void uart_init(void);

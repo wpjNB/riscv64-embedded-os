@@ -3,6 +3,52 @@
 
 set -e
 
+# Function to build RISC-V toolchain from source
+function build_riscv_toolchain() {
+    echo
+    echo "Building RISC-V toolchain from source..."
+    echo "This will take 30-60 minutes and requires ~10GB of disk space."
+    echo
+    
+    # Create temporary directory
+    TEMP_DIR=$(mktemp -d)
+    cd "$TEMP_DIR"
+    
+    # Clone toolchain
+    echo "Cloning riscv-gnu-toolchain..."
+    git clone --depth 1 https://github.com/riscv/riscv-gnu-toolchain
+    cd riscv-gnu-toolchain
+    git submodule update --init --depth 1
+    
+    # Configure and build
+    echo "Configuring..."
+    ./configure --prefix=/opt/riscv --with-arch=rv64imac --with-abi=lp64
+    
+    echo "Building... (this will take a while)"
+    make -j$(nproc)
+    
+    echo "Installing (requires sudo)..."
+    sudo make install
+    
+    # Add to PATH
+    echo "Adding to PATH..."
+    if [ -f "$HOME/.bashrc" ]; then
+        echo 'export PATH="/opt/riscv/bin:$PATH"' >> "$HOME/.bashrc"
+        echo "Added to ~/.bashrc"
+    fi
+    if [ -f "$HOME/.zshrc" ]; then
+        echo 'export PATH="/opt/riscv/bin:$PATH"' >> "$HOME/.zshrc"
+        echo "Added to ~/.zshrc"
+    fi
+    
+    # Cleanup
+    cd ~
+    rm -rf "$TEMP_DIR"
+    
+    echo "RISC-V toolchain installed successfully!"
+    echo "Please restart your terminal or run: source ~/.bashrc"
+}
+
 echo "=========================================="
 echo "RISC-V Development Environment Setup"
 echo "=========================================="
@@ -138,47 +184,3 @@ else
     echo
     echo "See docs/BUILD.md for more information."
 fi
-
-function build_riscv_toolchain() {
-    echo
-    echo "Building RISC-V toolchain from source..."
-    echo "This will take 30-60 minutes and requires ~10GB of disk space."
-    echo
-    
-    # Create temporary directory
-    TEMP_DIR=$(mktemp -d)
-    cd "$TEMP_DIR"
-    
-    # Clone toolchain
-    echo "Cloning riscv-gnu-toolchain..."
-    git clone --depth 1 https://github.com/riscv/riscv-gnu-toolchain
-    cd riscv-gnu-toolchain
-    git submodule update --init --depth 1
-    
-    # Configure and build
-    echo "Configuring..."
-    ./configure --prefix=/opt/riscv --with-arch=rv64imac --with-abi=lp64
-    
-    echo "Building... (this will take a while)"
-    make -j$(nproc)
-    
-    echo "Installing (requires sudo)..."
-    sudo make install
-    
-    # Add to PATH
-    echo "Adding to PATH..."
-    if [ -f "$HOME/.bashrc" ]; then
-        echo 'export PATH="/opt/riscv/bin:$PATH"' >> "$HOME/.bashrc"
-        source "$HOME/.bashrc"
-    fi
-    if [ -f "$HOME/.zshrc" ]; then
-        echo 'export PATH="/opt/riscv/bin:$PATH"' >> "$HOME/.zshrc"
-    fi
-    
-    # Cleanup
-    cd ~
-    rm -rf "$TEMP_DIR"
-    
-    echo "RISC-V toolchain installed successfully!"
-    echo "Please restart your terminal or run: source ~/.bashrc"
-}
