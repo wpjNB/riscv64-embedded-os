@@ -12,14 +12,33 @@ typedef enum {
     PROC_ZOMBIE
 } proc_state_t;
 
+/* Saved registers for context switch */
+typedef struct context {
+    uint64_t ra;  /* Return address */
+    uint64_t sp;  /* Stack pointer */
+    uint64_t s0;  /* Saved registers */
+    uint64_t s1;
+    uint64_t s2;
+    uint64_t s3;
+    uint64_t s4;
+    uint64_t s5;
+    uint64_t s6;
+    uint64_t s7;
+    uint64_t s8;
+    uint64_t s9;
+    uint64_t s10;
+    uint64_t s11;
+} context_t;
+
 /* Process structure */
 typedef struct process {
     uint64_t pid;
     proc_state_t state;
     uint64_t *pagetable;
-    uint64_t context;
+    context_t context;
     uint64_t kernel_sp;
     uint64_t user_sp;
+    char name[32];
 } process_t;
 
 /* Process management functions */

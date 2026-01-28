@@ -20,6 +20,7 @@ process_t* process_alloc(void) {
         if (proc_table[i].state == PROC_UNUSED) {
             proc_table[i].pid = next_pid++;
             proc_table[i].state = PROC_RUNNABLE;
+            proc_table[i].name[0] = '\0';
             return &proc_table[i];
         }
     }

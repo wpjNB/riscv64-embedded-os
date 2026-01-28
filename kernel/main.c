@@ -2,7 +2,11 @@
 #include "riscv.h"
 #include "printf.h"
 #include "mm/mm.h"
+#include "mm/vm.h"
 #include "trap/trap.h"
+#include "process/scheduler.h"
+#include "fs/vfs.h"
+#include "fs/simplefs.h"
 #include "../drivers/uart/uart.h"
 
 #define SHELL_BUFFER_SIZE 128
@@ -139,8 +143,20 @@ void kernel_main(void) {
     /* Initialize memory management */
     mm_init();
     
+    /* Initialize virtual memory (SV39 paging) */
+    vm_init();
+    kvminithart();
+    
     /* Initialize trap handling */
     trap_init();
+    
+    /* Initialize scheduler */
+    scheduler_init();
+    
+    /* Initialize file systems */
+    vfs_init();
+    sfs_init();
+    sfs_format(256);  /* Format with 256 blocks (1MB) */
     
     /* Show system info */
     show_system_info();

@@ -4,11 +4,15 @@
 #include "../types.h"
 
 /* System call numbers */
-#define SYS_READ  0
-#define SYS_WRITE 1
-#define SYS_FORK  2
-#define SYS_EXEC  3
-#define SYS_EXIT  4
+#define SYS_READ   0
+#define SYS_WRITE  1
+#define SYS_FORK   2
+#define SYS_EXEC   3
+#define SYS_EXIT   4
+#define SYS_OPEN   5
+#define SYS_CLOSE  6
+#define SYS_GETPID 7
+#define SYS_YIELD  8
 
 /* System call initialization */
 void syscall_init(void);

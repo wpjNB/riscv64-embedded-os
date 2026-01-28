@@ -37,6 +37,7 @@ KERNEL_SRCS += $(wildcard $(KERNEL_DIR)/mm/*.c)
 KERNEL_SRCS += $(wildcard $(KERNEL_DIR)/process/*.c)
 KERNEL_SRCS += $(wildcard $(KERNEL_DIR)/syscall/*.c)
 KERNEL_SRCS += $(wildcard $(KERNEL_DIR)/trap/*.c)
+KERNEL_SRCS += $(wildcard $(KERNEL_DIR)/fs/*.c)
 
 # Driver sources
 DRIVER_SRCS := $(wildcard $(DRIVER_DIR)/uart/*.c)
@@ -62,7 +63,7 @@ all: $(BUILD_DIR)/kernel.elf $(BUILD_DIR)/kernel.bin
 # Create build directories
 $(BUILD_DIR):
 	@mkdir -p $(BUILD_DIR)
-	@mkdir -p $(BUILD_DIR)/$(KERNEL_DIR)/{mm,process,syscall,trap}
+	@mkdir -p $(BUILD_DIR)/$(KERNEL_DIR)/{mm,process,syscall,trap,fs}
 	@mkdir -p $(BUILD_DIR)/$(DRIVER_DIR)/{uart,rtc,plic}
 	@mkdir -p $(BUILD_DIR)/$(BOOT_DIR)
 	@mkdir -p $(BUILD_DIR)/$(USER_DIR)

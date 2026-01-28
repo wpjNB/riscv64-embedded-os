@@ -42,6 +42,7 @@
 #define INTERRUPT_BIT             (1UL << 63)
 
 /* CSR read/write inline functions */
+static inline uint64_t r_sstatus() {
     uint64_t x;
     asm volatile("csrr %0, sstatus" : "=r"(x));
     return x;
