@@ -1,0 +1,71 @@
+name: RISC-V OS Build and Test
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Install RISC-V toolchain and QEMU
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-riscv64-unknown-elf qemu-system-misc expect
+        
+    - name: Verify toolchain installation
+      run: |
+        riscv64-unknown-elf-gcc --version
+        qemu-system-riscv64 --version
+        
+    - name: Build kernel
+      run: |
+        make clean
+        make all
+        
+    - name: Check build artifacts
+      run: |
+        ls -lh build/
+        file build/kernel.elf
+        file build/kernel.bin
+        
+    - name: Run comprehensive tests
+      run: |
+        chmod +x scripts/test.sh
+        ./scripts/test.sh
+        
+    - name: Test kernel execution (quick)
+      run: |
+        timeout 3 unbuffer make run > qemu_output.txt 2>&1 || true
+        cat qemu_output.txt
+        grep -q "RISC-V 64-bit Embedded OS" qemu_output.txt
+        grep -q "KERNEL.*Starting RISC-V OS kernel" qemu_output.txt
+        grep -q "SHELL.*Starting simple shell" qemu_output.txt
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: kernel-artifacts
+        path: |
+          build/kernel.elf
+          build/kernel.bin
+          build/kernel.asm
+        retention-days: 30
+        
+    - name: Upload test logs
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-logs
+        path: |
+          /tmp/qemu_output.txt
+          qemu_output.txt
+        retention-days: 7
