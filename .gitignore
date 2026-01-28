@@ -25,3 +25,4 @@ qemu.log
 
 # Generated files
 compile_commands.json
+_codeql_detected_source_root
