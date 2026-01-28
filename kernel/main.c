@@ -12,6 +12,119 @@
 #define SHELL_BUFFER_SIZE 128
 #define QEMU_VIRT_TEST 0x100000  /* QEMU virt test device for poweroff */
 
+/* Test virtual memory */
+static void test_vm(void) {
+    printf("[TEST] Testing virtual memory...\n");
+    
+    // Test user page table creation
+    pagetable_t pt = vm_create_user_pagetable();
+    if (pt == NULL) {
+        printf("[TEST] Failed to create user page table\n");
+        return;
+    }
+    printf("[TEST] Created user page table at %p\n", pt);
+    
+    // Test mapping
+    uint64_t pa = 0x80100000;
+    int ret = mappages(pt, 0x1000, PAGE_SIZE, pa, PTE_R | PTE_W | PTE_U);
+    if (ret != 0) {
+        printf("[TEST] Failed to map page\n");
+        return;
+    }
+    printf("[TEST] Mapped VA 0x1000 -> PA %p\n", (void*)pa);
+    
+    // Test address translation
+    uint64_t pa2 = walkaddr(pt, 0x1000);
+    if (pa2 != pa) {
+        printf("[TEST] Address translation failed: got %p, expected %p\n", 
+               (void*)pa2, (void*)pa);
+        return;
+    }
+    printf("[TEST] Address translation verified\n");
+    
+    // Clean up
+    vm_free(pt);
+    
+    printf("[TEST] Virtual memory test PASSED\n");
+}
+
+/* Test scheduler */
+static void test_scheduler(void) {
+    printf("[TEST] Testing scheduler...\n");
+    
+    // Test process allocation
+    process_t *p1 = process_alloc();
+    if (p1 == NULL) {
+        printf("[TEST] Failed to allocate process 1\n");
+        return;
+    }
+    
+    int i;
+    for (i = 0; i < 5 && p1->name[i] = "test1"[i]; i++);
+    p1->name[i] = '\0';
+    printf("[TEST] Allocated process: %s (PID %lu)\n", p1->name, p1->pid);
+    
+    process_t *p2 = process_alloc();
+    if (p2 == NULL) {
+        printf("[TEST] Failed to allocate process 2\n");
+        return;
+    }
+    
+    for (i = 0; i < 5 && p2->name[i] = "test2"[i]; i++);
+    p2->name[i] = '\0';
+    printf("[TEST] Allocated process: %s (PID %lu)\n", p2->name, p2->pid);
+    
+    // Add to scheduler
+    sched_add(p1);
+    sched_add(p2);
+    printf("[TEST] Added processes to scheduler\n");
+    
+    printf("[TEST] Scheduler test PASSED\n");
+}
+
+/* Test file system */
+static void test_filesystem(void) {
+    printf("[TEST] Testing file system...\n");
+    
+    // Test file creation
+    int ino = sfs_create("testfile", VFS_FILE);
+    if (ino <= 0) {
+        printf("[TEST] Failed to create file\n");
+        return;
+    }
+    printf("[TEST] Created file 'testfile' with inode %d\n", ino);
+    
+    // Test file deletion
+    int ret = sfs_delete("testfile");
+    if (ret != 0) {
+        printf("[TEST] Failed to delete file\n");
+        return;
+    }
+    printf("[TEST] Deleted file 'testfile'\n");
+    
+    printf("[TEST] File system test PASSED\n");
+}
+
+/* Run all tests */
+static void run_tests(void) {
+    printf("\n========================================\n");
+    printf("  Running System Tests\n");
+    printf("========================================\n\n");
+    
+    test_vm();
+    printf("\n");
+    
+    test_scheduler();
+    printf("\n");
+    
+    test_filesystem();
+    printf("\n");
+    
+    printf("========================================\n");
+    printf("  All Tests Completed\n");
+    printf("========================================\n\n");
+}
+
 /* Banner */
 static void print_banner(void) {
     printf("\n");
@@ -160,6 +273,9 @@ void kernel_main(void) {
     
     /* Show system info */
     show_system_info();
+    
+    /* Run tests */
+    run_tests();
     
     /* Run initial test */
     test_memory();
