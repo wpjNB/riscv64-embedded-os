@@ -37,15 +37,34 @@
 ### 虚拟内存
 - 基于 RISCV 的 SV39 分页机制实现了运行时进程虚拟地址空间的映射
 - 内核与用户态使用不同的映射方式
+- 三级页表支持 512GB 虚拟地址空间
+- 完整的页表管理和 TLB 刷新机制
+
+### 调度系统
+- 实现了轮转调度算法
+- 基于定时器中断的抢占式调度
+- 支持进程上下文切换
+- 就绪队列管理
 
 ### 系统功能
-- 实现了一个应用加载机制，通过万能函数二进制文件，生成独立进程的 ELF 编号
+- 实现了 ELF 加载器，支持加载 RISC-V 64-bit 可执行文件
 - 实现了常用系统调用接口：
   - `fork` - 进程创建
   - `exec` - 程序执行
   - `read` - 读取操作
   - `write` - 写入操作
+  - `open` - 打开文件
+  - `close` - 关闭文件
+  - `getpid` - 获取进程 ID
+  - `yield` - 让出 CPU
   - 在系统启动时会拉起 `user_shell` 进程
+
+### 文件系统
+- 实现了 VFS (虚拟文件系统) 层
+- 提供统一的文件访问接口
+- 支持设备文件注册
+- 实现了简单的内存文件系统 (SimpleFS)
+- 支持基本文件操作（创建、删除、读写）
 
 ### 安全性
 - 对 CPU 核心的内存屏障进行了安全域与非安全域的分隔
@@ -57,10 +76,11 @@
 riscv64-embedded-os/
 ├── bootloader/          # Boot 引导代码
 ├── kernel/              # 操作系统内核
-│   ├── mm/             # 内存管理
-│   ├── process/        # 进程管理
+│   ├── mm/             # 内存管理 (含虚拟内存)
+│   ├── process/        # 进程管理 (含调度器和 ELF 加载器)
 │   ├── syscall/        # 系统调用
-│   └── trap/           # 中断处理
+│   ├── trap/           # 中断处理
+│   └── fs/             # 文件系统 (VFS 和 SimpleFS)
 ├── user/               # 用户态程序
 │   └── shell/          # 用户 Shell
 ├── drivers/            # 硬件驱动
@@ -71,6 +91,8 @@ riscv64-embedded-os/
 ├── qemu/               # Qemu 配置
 │   └── device-tree/    # 设备树文件
 ├── scripts/            # 构建脚本
+├── docs/               # 文档
+│   └── NEW_FEATURES.md # 新功能文档
 ├── Makefile            # 主 Makefile
 └── README.md           # 项目文档
 ```
@@ -113,12 +135,14 @@ make debug
 详细文档请查看 `docs/` 目录：
 
 ### 中文文档
+- [新功能文档 (NEW_FEATURES.md)](docs/NEW_FEATURES.md) - 新增强功能详细说明
 - [构建指南 (BUILD.zh.md)](docs/BUILD.zh.md) - 如何编译和运行项目
 - [开发指南 (DEVELOPMENT.zh.md)](docs/DEVELOPMENT.zh.md) - 开发、调试和贡献指南
 - [系统架构 (ARCHITECTURE.zh.md)](docs/ARCHITECTURE.zh.md) - 系统架构和设计文档
 - [OpenSBI 参考 (OPENSBI.zh.md)](docs/OPENSBI.zh.md) - OpenSBI 引导程序说明
 
 ### English Documentation
+- [New Features (NEW_FEATURES.md)](docs/NEW_FEATURES.md) - Detailed description of new enhancement features
 - [Build Guide (BUILD.md)](docs/BUILD.md) - How to compile and run the project
 - [Development Guide (DEVELOPMENT.md)](docs/DEVELOPMENT.md) - Development, debugging and contribution guide
 - [System Architecture (ARCHITECTURE.md)](docs/ARCHITECTURE.md) - System architecture and design documentation

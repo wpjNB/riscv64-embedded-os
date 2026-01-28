@@ -1,6 +1,7 @@
 #include "trap.h"
 #include "../riscv.h"
 #include "../printf.h"
+#include "../process/scheduler.h"
 
 extern void trap_entry(void);
 
@@ -32,7 +33,8 @@ void trap_handler(void) {
                 printf("[TRAP] Software interrupt\n");
                 break;
             case 5: /* Supervisor timer interrupt */
-                /* Timer interrupt - common for task scheduling */
+                /* Timer interrupt - call scheduler for preemption */
+                sched_tick();
                 break;
             case 9: /* Supervisor external interrupt */
                 printf("[TRAP] External interrupt\n");
