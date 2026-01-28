@@ -1,0 +1,28 @@
+# Build artifacts
+*.o
+*.elf
+*.bin
+*.img
+*.a
+*.so
+*.d
+
+# Directories
+build/
+target/
+*.dSYM/
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Qemu runtime
+qemu.log
+
+# Generated files
+compile_commands.json
+_codeql_detected_source_root
