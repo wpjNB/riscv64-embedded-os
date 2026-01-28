@@ -83,6 +83,13 @@ riscv64-embedded-os/
 - Qemu (支持 RISC-V)
 - Make
 
+### 自动安装环境
+
+```bash
+# 运行自动安装脚本（Linux/macOS）
+./scripts/setup.sh
+```
+
 ### 编译
 
 ```bash
@@ -106,6 +113,7 @@ make debug
 详细文档请查看 `docs/` 目录：
 
 - [构建指南 (BUILD.md)](docs/BUILD.md) - 如何编译和运行项目
+- [开发指南 (DEVELOPMENT.md)](docs/DEVELOPMENT.md) - 开发、调试和贡献指南
 - [系统架构 (ARCHITECTURE.md)](docs/ARCHITECTURE.md) - 系统架构和设计文档
 - [OpenSBI 参考 (OPENSBI.md)](docs/OPENSBI.md) - OpenSBI 引导程序说明
 
