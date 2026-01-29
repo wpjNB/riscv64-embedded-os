@@ -5,11 +5,11 @@ ENTRY(_start)
 
 /* Memory layout for QEMU virt machine */
 MEMORY {
-    RAM (rwx) : ORIGIN = 0x80000000, LENGTH = 128M
+    RAM (rwx) : ORIGIN = 0x80200000, LENGTH = 126M
 }
 
 SECTIONS {
-    . = 0x80000000;
+    . = 0x80200000;
 
     /* Boot section */
     .text.boot : {
@@ -29,6 +29,7 @@ SECTIONS {
 
     /* Data section */
     .data : ALIGN(8) {
+        __global_pointer$ = . + 0x800;
         *(.data .data.*)
         *(.sdata .sdata.*)
     } > RAM

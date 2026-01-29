@@ -285,12 +285,15 @@ static void run_shell(void) {
 void kernel_main(void) {
   /* Initialize UART for console output */
   uart_init();
+  
+  /* Early debug - write directly to UART */
+  uart_puts("KERNEL: Entry point reached\n");
 
   /* Print banner */
   print_banner();
 
   printf("[KERNEL] Starting RISC-V OS kernel...\n");
-  printf("[KERNEL] Kernel loaded at 0x80000000\n");
+  printf("[KERNEL] Kernel loaded at 0x80200000\n");
 
   /* Initialize memory management */
   mm_init();
