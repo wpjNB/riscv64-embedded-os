@@ -167,9 +167,9 @@ void scheduler_init(void) {
   mlfq_init(&mlfq_levels[1], 20);  /* Medium priority: 20 ticks */
   mlfq_init(&mlfq_levels[2], 40);  /* Low priority: 40 ticks */
   
-  printf("[SCHED] MLFQ Level 0: time slice = %lu ticks\n", mlfq_levels[0].time_slice);
-  printf("[SCHED] MLFQ Level 1: time slice = %lu ticks\n", mlfq_levels[1].time_slice);
-  printf("[SCHED] MLFQ Level 2: time slice = %lu ticks\n", mlfq_levels[2].time_slice);
+  printf("[SCHED] MLFQ Level 0: time slice = %u ticks\n", (uint32_t)mlfq_levels[0].time_slice);
+  printf("[SCHED] MLFQ Level 1: time slice = %u ticks\n", (uint32_t)mlfq_levels[1].time_slice);
+  printf("[SCHED] MLFQ Level 2: time slice = %u ticks\n", (uint32_t)mlfq_levels[2].time_slice);
   
   /* Initialize real-time queue */
   rt_queue_init(&rt_queue);
