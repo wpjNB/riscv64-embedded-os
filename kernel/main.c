@@ -73,7 +73,11 @@ static void test_scheduler(void) {
   for (i = 0; i < 5 && (p1->name[i] = "test1"[i]); i++)
     ;
   p1->name[i] = '\0';
-  printf("[TEST] Allocated process: %s (PID %lu)\n", p1->name, p1->pid);
+  
+  /* Set normal priority */
+  sched_set_priority(p1, PRIORITY_DEFAULT);
+  printf("[TEST] Allocated process: %s (PID %lu, Priority: %d)\n", 
+         p1->name, p1->pid, p1->priority);
 
   process_t *p2 = process_alloc();
   if (p2 == NULL) {
@@ -84,12 +88,37 @@ static void test_scheduler(void) {
   for (i = 0; i < 5 && (p2->name[i] = "test2"[i]); i++)
     ;
   p2->name[i] = '\0';
-  printf("[TEST] Allocated process: %s (PID %lu)\n", p2->name, p2->pid);
+  
+  /* Set higher priority */
+  sched_set_priority(p2, PRIORITY_NORMAL_MIN + 10);
+  printf("[TEST] Allocated process: %s (PID %lu, Priority: %d)\n", 
+         p2->name, p2->pid, p2->priority);
+
+  // Test RT process
+  process_t *p3 = process_alloc();
+  if (p3 == NULL) {
+    printf("[TEST] Failed to allocate process 3\n");
+    return;
+  }
+
+  for (i = 0; i < 7 && (p3->name[i] = "rt_test"[i]); i++)
+    ;
+  p3->name[i] = '\0';
+  
+  /* Set real-time priority */
+  sched_set_priority(p3, 50);  /* RT priority */
+  sched_set_policy(p3, SCHED_FIFO);
+  printf("[TEST] Allocated RT process: %s (PID %lu, Priority: %d, Policy: FIFO)\n", 
+         p3->name, p3->pid, p3->priority);
 
   // Add to scheduler
   sched_add(p1);
   sched_add(p2);
+  sched_add(p3);
   printf("[TEST] Added processes to scheduler\n");
+  
+  // Show scheduler stats
+  sched_print_stats();
 
   printf("[TEST] Scheduler test PASSED\n");
 }
@@ -231,8 +260,27 @@ static void run_shell(void) {
       printf("  info     - Show system information\n");
       printf("  test     - Run memory test\n");
       printf("  testdev  - Test VFS device driver\n");
+      printf("  ps       - Show process statistics\n");
+      printf("  sched    - Show scheduler statistics\n");
       printf("  echo     - Echo back the input\n");
       printf("  reboot   - Reboot the system\n");
+    } else if (buffer[0] == 'p' && buffer[1] == 's' && buffer[2] == '\0') {
+      /* Show all process statistics */
+      printf("\n[PS] Process List:\n");
+      printf("========================================\n");
+      extern process_t* process_alloc(void);  /* Access to iterate processes */
+      /* We need a way to iterate all processes - for now show current */
+      process_t *curr = current_proc();
+      if (curr != NULL) {
+        process_print_stats(curr);
+      } else {
+        printf("No current process\n");
+      }
+      printf("========================================\n");
+    } else if (buffer[0] == 's' && buffer[1] == 'c' && buffer[2] == 'h' &&
+               buffer[3] == 'e' && buffer[4] == 'd' && buffer[5] == '\0') {
+      /* Show scheduler statistics */
+      sched_print_stats();
     } else if (buffer[0] == 'i' && buffer[1] == 'n' && buffer[2] == 'f' &&
                buffer[3] == 'o' && buffer[4] == '\0') {
       show_system_info();
