@@ -40,6 +40,9 @@ KERNEL_SRCS += $(wildcard $(KERNEL_DIR)/syscall/*.c)
 KERNEL_SRCS += $(wildcard $(KERNEL_DIR)/trap/*.c)
 KERNEL_SRCS += $(wildcard $(KERNEL_DIR)/fs/*.c)
 
+# Kernel assembly sources
+KERNEL_ASM_SRCS := $(wildcard $(KERNEL_DIR)/process/*.S)
+
 # Driver sources
 DRIVER_SRCS := $(wildcard $(DRIVER_DIR)/uart/*.c)
 DRIVER_SRCS += $(wildcard $(DRIVER_DIR)/rtc/*.c)
@@ -52,11 +55,12 @@ BOOT_SRCS += $(wildcard $(BOOT_DIR)/*.c)
 
 # All kernel objects
 KERNEL_OBJS := $(KERNEL_SRCS:%.c=$(BUILD_DIR)/%.o)
+KERNEL_ASM_OBJS := $(KERNEL_ASM_SRCS:%.S=$(BUILD_DIR)/%.o)
 DRIVER_OBJS := $(DRIVER_SRCS:%.c=$(BUILD_DIR)/%.o)
 BOOT_OBJS := $(BOOT_SRCS:$(BOOT_DIR)/%.S=$(BUILD_DIR)/$(BOOT_DIR)/%.o)
 BOOT_OBJS += $(filter %.o,$(BOOT_SRCS:$(BOOT_DIR)/%.c=$(BUILD_DIR)/$(BOOT_DIR)/%.o))
 
-ALL_OBJS := $(BOOT_OBJS) $(KERNEL_OBJS) $(DRIVER_OBJS)
+ALL_OBJS := $(BOOT_OBJS) $(KERNEL_OBJS) $(KERNEL_ASM_OBJS) $(DRIVER_OBJS)
 
 # Default target
 .PHONY: all
