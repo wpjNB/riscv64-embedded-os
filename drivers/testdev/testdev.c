@@ -1,6 +1,5 @@
 #include "testdev.h"
 
-#include "../../kernel/mm/mm.h"
 #include "../../kernel/printf.h"
 
 /* Test device buffer */
