@@ -130,6 +130,27 @@ make run
 make debug
 ```
 
+### 测试
+
+运行完整的测试套件以验证系统功能：
+
+```bash
+# 首先确保安装了 expect 包（提供 unbuffer 命令）
+sudo apt-get install expect
+
+# 运行测试
+./scripts/test.sh
+```
+
+这将执行以下测试：
+- 工具链可用性检查
+- QEMU 可用性检查
+- 内核构建测试
+- 二进制文件分析
+- QEMU 运行测试
+- 内存布局验证
+- 源文件完整性检查
+
 ## 📖 文档
 
 详细文档请查看 `docs/` 目录：

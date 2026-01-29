@@ -22,7 +22,9 @@ CFLAGS += -fno-common -ffunction-sections -fdata-sections
 CFLAGS += -fno-pic -fno-pie
 CFLAGS += -I$(KERNEL_DIR) -I$(DRIVER_DIR) -Iinclude
 
-# Linker flags
+# Linker flags (for direct ld invocation)
+# Note: These flags are passed directly to ld, not through gcc driver
+# If linking through $(CC) in the future, use -Wl, prefix
 LDFLAGS := -nostdlib -static
 LDFLAGS += --gc-sections
 
