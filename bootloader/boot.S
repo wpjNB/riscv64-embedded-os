@@ -7,12 +7,6 @@ _start:
     # Disable interrupts
     csrw sie, zero
     csrw sip, zero
-    
-    # Very early debug - write directly to UART
-    # This should work even before any initialization
-    lui t0, 0x10000      # Load upper bits: 0x10000000
-    li t1, 0x58          # 'X' character
-    sb t1, 0(t0)         # Write to UART THR register
 
     # Initialize global pointer
     .option push
@@ -36,11 +30,6 @@ clear_bss_done:
     # Setup trap handler early
     la t0, trap_entry
     csrw stvec, t0
-    
-    # Early debug - write 'K' to UART to show we reached here
-    li t0, 0x10000000    # UART base address
-    li t1, 0x4B          # 'K' character
-    sb t1, 0(t0)         # Write to UART
     
     # Jump to kernel main
     call kernel_main

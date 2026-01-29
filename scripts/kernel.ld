@@ -52,7 +52,7 @@ SECTIONS {
     /* Heap section */
     . = ALIGN(4096);
     __heap_start = .;
-    . += 0x100000; /* 1MB heap */
+    . += 0x400000; /* 4MB heap */
     __heap_end = .;
 
     /* Kernel end */
