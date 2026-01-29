@@ -43,6 +43,8 @@ KERNEL_SRCS += $(wildcard $(KERNEL_DIR)/fs/*.c)
 DRIVER_SRCS := $(wildcard $(DRIVER_DIR)/uart/*.c)
 DRIVER_SRCS += $(wildcard $(DRIVER_DIR)/rtc/*.c)
 DRIVER_SRCS += $(wildcard $(DRIVER_DIR)/plic/*.c)
+DRIVER_SRCS += $(wildcard $(DRIVER_DIR)/testdev/*.c)
+DRIVER_SRCS += $(wildcard $(DRIVER_DIR)/test2dev/*.c)
 
 # Boot sources
 BOOT_SRCS := $(wildcard $(BOOT_DIR)/*.S)
@@ -64,7 +66,7 @@ all: $(BUILD_DIR)/kernel.elf $(BUILD_DIR)/kernel.bin
 $(BUILD_DIR):
 	@mkdir -p $(BUILD_DIR)
 	@mkdir -p $(BUILD_DIR)/$(KERNEL_DIR)/{mm,process,syscall,trap,fs}
-	@mkdir -p $(BUILD_DIR)/$(DRIVER_DIR)/{uart,rtc,plic}
+	@mkdir -p $(BUILD_DIR)/$(DRIVER_DIR)/{uart,rtc,plic,testdev,test2dev}
 	@mkdir -p $(BUILD_DIR)/$(BOOT_DIR)
 	@mkdir -p $(BUILD_DIR)/$(USER_DIR)
 

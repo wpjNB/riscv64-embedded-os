@@ -1,3 +1,4 @@
+#include "../drivers/testdev/testdev.h"
 #include "../drivers/uart/uart.h"
 #include "fs/simplefs.h"
 #include "fs/vfs.h"
@@ -220,11 +221,47 @@ static void run_shell(void) {
       printf("  help     - Show this help message\n");
       printf("  info     - Show system information\n");
       printf("  test     - Run memory test\n");
+      printf("  testdev  - Test VFS device driver\n");
       printf("  echo     - Echo back the input\n");
       printf("  reboot   - Reboot the system\n");
     } else if (buffer[0] == 'i' && buffer[1] == 'n' && buffer[2] == 'f' &&
                buffer[3] == 'o' && buffer[4] == '\0') {
       show_system_info();
+    } else if (buffer[0] == 't' && buffer[1] == 'e' && buffer[2] == 's' &&
+               buffer[3] == 't' && buffer[4] == 'd' && buffer[5] == 'e' &&
+               buffer[6] == 'v' && buffer[7] == '\0') {
+      /* Test the test device */
+      printf("[TEST] Testing /testdev device\n");
+
+      /* Open device */
+      file_t *file = vfs_open("/testdev", 0);
+      if (file == NULL) {
+        printf("[TEST] Failed to open /testdev\n");
+        continue;
+      }
+
+      /* Write some data */
+      const char *test_data = "Hello from VFS test!";
+      int written = vfs_write(file, test_data, 20);
+      printf("[TEST] Wrote %d bytes\n", written);
+
+      /* Seek back to beginning */
+      if (file->inode->ops->seek) {
+        file->inode->ops->seek(file, 0);
+      }
+
+      /* Read back */
+      char read_buf[64];
+      int read_bytes = vfs_read(file, read_buf, sizeof(read_buf));
+      if (read_bytes > 0) {
+        read_buf[read_bytes] = '\0';
+        printf("[TEST] Read %d bytes: %s\n", read_bytes, read_buf);
+      }
+
+      /* Close */
+      vfs_close(file);
+      printf("[TEST] Test completed\n");
+
     } else if (buffer[0] == 't' && buffer[1] == 'e' && buffer[2] == 's' &&
                buffer[3] == 't' && buffer[4] == '\0') {
       test_memory();
@@ -272,6 +309,10 @@ void kernel_main(void) {
   vfs_init();
   sfs_init();
   sfs_format(256); /* Format with 256 blocks (1MB) */
+
+  /* Initialize and register test device */
+  testdev_init();
+  testdev_register();
 
   /* Show system info */
   show_system_info();
