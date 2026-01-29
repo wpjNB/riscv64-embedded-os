@@ -13,6 +13,15 @@
 #define SHELL_BUFFER_SIZE 128
 #define QEMU_VIRT_TEST 0x100000 /* QEMU virt test device for poweroff */
 
+/* Simple strlen implementation for bare-metal */
+static size_t strlen(const char *s) {
+  size_t len = 0;
+  while (s[len] != '\0') {
+    len++;
+  }
+  return len;
+}
+
 /* Test virtual memory */
 static void test_vm(void) {
   printf("[TEST] Testing virtual memory...\n");
@@ -242,18 +251,34 @@ static void run_shell(void) {
 
       /* Write some data */
       const char *test_data = "Hello from VFS test!";
-      int written = vfs_write(file, test_data, 20);
+      size_t data_len = strlen(test_data);
+      int written = vfs_write(file, test_data, data_len);
+      if (written < 0) {
+        printf("[TEST] Failed to write data\n");
+        vfs_close(file);
+        continue;
+      }
       printf("[TEST] Wrote %d bytes\n", written);
 
       /* Seek back to beginning */
       if (file->inode->ops->seek) {
-        file->inode->ops->seek(file, 0);
+        int seek_ret = file->inode->ops->seek(file, 0);
+        if (seek_ret != 0) {
+          printf("[TEST] Failed to seek\n");
+          vfs_close(file);
+          continue;
+        }
       }
 
-      /* Read back */
-      char read_buf[64];
-      int read_bytes = vfs_read(file, read_buf, sizeof(read_buf));
-      if (read_bytes > 0) {
+      /* Read back - use buffer with space for null terminator */
+      char read_buf[65];
+      int read_bytes = vfs_read(file, read_buf, sizeof(read_buf) - 1);
+      if (read_bytes < 0) {
+        printf("[TEST] Failed to read data\n");
+        vfs_close(file);
+        continue;
+      }
+      if (read_bytes > 0 && read_bytes < (int)sizeof(read_buf)) {
         read_buf[read_bytes] = '\0';
         printf("[TEST] Read %d bytes: %s\n", read_bytes, read_buf);
       }
