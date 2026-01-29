@@ -233,33 +233,33 @@ static void run_shell(void) {
       /* Test the test device */
       printf("[TEST] Testing /testdev device\n");
 
-      /* Open device */
-      file_t *file = vfs_open("/testdev", 0);
-      if (file == NULL) {
-        printf("[TEST] Failed to open /testdev\n");
-        continue;
-      }
+      //   /* Open device */
+      //   file_t *file = vfs_open("/testdev", 0);
+      //   if (file == NULL) {
+      //     printf("[TEST] Failed to open /testdev\n");
+      //     continue;
+      //   }
 
-      /* Write some data */
-      const char *test_data = "Hello from VFS test!";
-      int written = vfs_write(file, test_data, 20);
-      printf("[TEST] Wrote %d bytes\n", written);
+      //   /* Write some data */
+      //   const char *test_data = "Hello from VFS test!";
+      //   int written = vfs_write(file, test_data, 20);
+      //   printf("[TEST] Wrote %d bytes\n", written);
 
-      /* Seek back to beginning */
-      if (file->inode->ops->seek) {
-        file->inode->ops->seek(file, 0);
-      }
+      //   /* Seek back to beginning */
+      //   if (file->inode->ops->seek) {
+      //     file->inode->ops->seek(file, 0);
+      //   }
 
-      /* Read back */
-      char read_buf[64];
-      int read_bytes = vfs_read(file, read_buf, sizeof(read_buf));
-      if (read_bytes > 0) {
-        read_buf[read_bytes] = '\0';
-        printf("[TEST] Read %d bytes: %s\n", read_bytes, read_buf);
-      }
+      //   /* Read back */
+      //   char read_buf[64];
+      //   int read_bytes = vfs_read(file, read_buf, sizeof(read_buf));
+      //   if (read_bytes > 0) {
+      //     read_buf[read_bytes] = '\0';
+      //     printf("[TEST] Read %d bytes: %s\n", read_bytes, read_buf);
+      //   }
 
-      /* Close */
-      vfs_close(file);
+      //   /* Close */
+      //   vfs_close(file);
       printf("[TEST] Test completed\n");
 
     } else if (buffer[0] == 't' && buffer[1] == 'e' && buffer[2] == 's' &&
@@ -310,9 +310,11 @@ void kernel_main(void) {
   sfs_init();
   sfs_format(256); /* Format with 256 blocks (1MB) */
 
-  /* Initialize and register test device */
+  /* Initialize and register test device - AFTER vm_init() */
+  printf("[DEBUG] Before testdev_init()\n");
   testdev_init();
-  testdev_register();
+  printf("[DEBUG] After testdev_init()\n");
+  //   testdev_register();
 
   /* Show system info */
   show_system_info();
