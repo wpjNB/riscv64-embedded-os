@@ -1,7 +1,7 @@
 # RISC-V 64-bit Embedded OS Makefile
 
 # Toolchain
-CROSS_COMPILE ?= riscv64-unknown-elf-
+CROSS_COMPILE ?= riscv64-linux-gnu-
 CC := $(CROSS_COMPILE)gcc
 LD := $(CROSS_COMPILE)ld
 OBJCOPY := $(CROSS_COMPILE)objcopy
@@ -15,7 +15,7 @@ USER_DIR := user
 DRIVER_DIR := drivers
 
 # Compiler flags
-CFLAGS := -march=rv64imac -mabi=lp64 -mcmodel=medany
+CFLAGS := -march=rv64imac_zicsr -mabi=lp64 -mcmodel=medany
 CFLAGS += -Wall -Wextra -O2 -g
 CFLAGS += -fno-builtin -nostdlib -nostartfiles
 CFLAGS += -fno-common -ffunction-sections -fdata-sections

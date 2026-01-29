@@ -22,6 +22,21 @@ process_t *process_alloc(void) {
       proc_table[i].pid = next_pid++;
       proc_table[i].state = PROC_RUNNABLE;
       proc_table[i].name[0] = '\0';
+      
+      /* Initialize scheduling fields */
+      proc_table[i].priority = PRIO_DEFAULT;
+      proc_table[i].dynamic_priority = PRIO_DEFAULT;
+      proc_table[i].policy = SCHED_NORMAL;
+      proc_table[i].time_slice = 0;
+      proc_table[i].total_time_slice = 0;
+      proc_table[i].cpu_affinity = -1; /* No affinity */
+      proc_table[i].last_cpu = -1;
+      
+      /* Initialize statistics */
+      proc_table[i].stats.cpu_time = 0;
+      proc_table[i].stats.context_switches = 0;
+      proc_table[i].stats.last_run_tick = 0;
+      
       return &proc_table[i];
     }
   }
