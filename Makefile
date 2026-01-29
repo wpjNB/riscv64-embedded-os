@@ -1,7 +1,7 @@
 # RISC-V 64-bit Embedded OS Makefile
 
 # Toolchain
-CROSS_COMPILE ?= riscv64-unknown-elf-
+CROSS_COMPILE ?= riscv64-linux-gnu-
 CC := $(CROSS_COMPILE)gcc
 LD := $(CROSS_COMPILE)ld
 OBJCOPY := $(CROSS_COMPILE)objcopy
@@ -15,10 +15,11 @@ USER_DIR := user
 DRIVER_DIR := drivers
 
 # Compiler flags
-CFLAGS := -march=rv64imac -mabi=lp64 -mcmodel=medany
+CFLAGS := -march=rv64imac_zicsr -mabi=lp64 -mcmodel=medany
 CFLAGS += -Wall -Wextra -O2 -g
-CFLAGS += -fno-builtin -nostdlib -nostartfiles
+CFLAGS += -fno-builtin -nostdlib -nostartfiles -ffreestanding
 CFLAGS += -fno-common -ffunction-sections -fdata-sections
+CFLAGS += -fno-pic -fno-pie
 CFLAGS += -I$(KERNEL_DIR) -I$(DRIVER_DIR) -Iinclude
 
 # Linker flags
@@ -27,7 +28,7 @@ LDFLAGS += --gc-sections
 
 # Qemu settings
 QEMU := qemu-system-riscv64
-QEMU_FLAGS := -machine virt -nographic -bios none
+QEMU_FLAGS := -machine virt -nographic -bios default
 QEMU_FLAGS += -m 128M -smp 1
 QEMU_FLAGS += -kernel $(BUILD_DIR)/kernel.elf
 

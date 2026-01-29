@@ -13,6 +13,15 @@
 #define SHELL_BUFFER_SIZE 128
 #define QEMU_VIRT_TEST 0x100000 /* QEMU virt test device for poweroff */
 
+/* Simple strlen implementation for bare-metal */
+static size_t strlen(const char *s) {
+  size_t len = 0;
+  while (s[len] != '\0') {
+    len++;
+  }
+  return len;
+}
+
 /* Test virtual memory */
 static void test_vm(void) {
   printf("[TEST] Testing virtual memory...\n");
@@ -233,33 +242,49 @@ static void run_shell(void) {
       /* Test the test device */
       printf("[TEST] Testing /testdev device\n");
 
-      //   /* Open device */
-      //   file_t *file = vfs_open("/testdev", 0);
-      //   if (file == NULL) {
-      //     printf("[TEST] Failed to open /testdev\n");
-      //     continue;
-      //   }
+      /* Open device */
+      file_t *file = vfs_open("/testdev", 0);
+      if (file == NULL) {
+        printf("[TEST] Failed to open /testdev\n");
+        continue;
+      }
 
-      //   /* Write some data */
-      //   const char *test_data = "Hello from VFS test!";
-      //   int written = vfs_write(file, test_data, 20);
-      //   printf("[TEST] Wrote %d bytes\n", written);
+      /* Write some data */
+      const char *test_data = "Hello from VFS test!";
+      size_t data_len = strlen(test_data);
+      int written = vfs_write(file, test_data, data_len);
+      if (written < 0) {
+        printf("[TEST] Failed to write data\n");
+        vfs_close(file);
+        continue;
+      }
+      printf("[TEST] Wrote %d bytes\n", written);
 
-      //   /* Seek back to beginning */
-      //   if (file->inode->ops->seek) {
-      //     file->inode->ops->seek(file, 0);
-      //   }
+      /* Seek back to beginning */
+      if (file->inode->ops->seek) {
+        int seek_ret = file->inode->ops->seek(file, 0);
+        if (seek_ret != 0) {
+          printf("[TEST] Failed to seek\n");
+          vfs_close(file);
+          continue;
+        }
+      }
 
-      //   /* Read back */
-      //   char read_buf[64];
-      //   int read_bytes = vfs_read(file, read_buf, sizeof(read_buf));
-      //   if (read_bytes > 0) {
-      //     read_buf[read_bytes] = '\0';
-      //     printf("[TEST] Read %d bytes: %s\n", read_bytes, read_buf);
-      //   }
+      /* Read back - use buffer with space for null terminator */
+      char read_buf[65];
+      int read_bytes = vfs_read(file, read_buf, sizeof(read_buf) - 1);
+      if (read_bytes < 0) {
+        printf("[TEST] Failed to read data\n");
+        vfs_close(file);
+        continue;
+      }
+      if (read_bytes > 0 && read_bytes < (int)sizeof(read_buf)) {
+        read_buf[read_bytes] = '\0';
+        printf("[TEST] Read %d bytes: %s\n", read_bytes, read_buf);
+      }
 
-      //   /* Close */
-      //   vfs_close(file);
+      /* Close */
+      vfs_close(file);
       printf("[TEST] Test completed\n");
 
     } else if (buffer[0] == 't' && buffer[1] == 'e' && buffer[2] == 's' &&
@@ -290,7 +315,7 @@ void kernel_main(void) {
   print_banner();
 
   printf("[KERNEL] Starting RISC-V OS kernel...\n");
-  printf("[KERNEL] Kernel loaded at 0x80000000\n");
+  printf("[KERNEL] Kernel loaded at 0x80200000\n");
 
   /* Initialize memory management */
   mm_init();
@@ -311,10 +336,8 @@ void kernel_main(void) {
   sfs_format(256); /* Format with 256 blocks (1MB) */
 
   /* Initialize and register test device - AFTER vm_init() */
-  printf("[DEBUG] Before testdev_init()\n");
   testdev_init();
-  printf("[DEBUG] After testdev_init()\n");
-  //   testdev_register();
+  testdev_register();
 
   /* Show system info */
   show_system_info();

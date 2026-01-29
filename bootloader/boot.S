@@ -8,6 +8,12 @@ _start:
     csrw sie, zero
     csrw sip, zero
 
+    # Initialize global pointer
+    .option push
+    .option norelax
+    la gp, __global_pointer$
+    .option pop
+
     # Setup stack pointer
     la sp, __stack_top
 
@@ -21,6 +27,10 @@ clear_bss:
     j clear_bss
 
 clear_bss_done:
+    # Setup trap handler early
+    la t0, trap_entry
+    csrw stvec, t0
+    
     # Jump to kernel main
     call kernel_main
 
