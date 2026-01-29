@@ -48,6 +48,14 @@ static process_t idle_processes[MAX_CPUS];
 /* Current CPU (simplified for single core initially) */
 static int current_cpu = 0;
 
+/*
+ * NOTE: The ready queues and RT queue are currently global and shared.
+ * In a true SMP environment, these would need synchronization (locks)
+ * or per-CPU run queues with load balancing to prevent race conditions.
+ * The current implementation is designed for single-CPU mode but includes
+ * the infrastructure for future multi-CPU expansion.
+ */
+
 /* Initialize an MLFQ queue */
 static void mlfq_init(mlfq_t *q) {
     q->head = 0;
@@ -110,7 +118,8 @@ static process_t* rt_dequeue(rt_queue_t *q) {
 /* Initialize idle process */
 static void init_idle_process(int cpu_id) {
     process_t *idle = &idle_processes[cpu_id];
-    idle->pid = 0;  /* PID 0 for idle */
+    /* Use special PID range for idle processes to avoid conflicts */
+    idle->pid = (uint64_t)(-1) - cpu_id;  /* -1, -2, -3, ... for CPUs 0, 1, 2, ... */
     idle->state = PROC_RUNNABLE;
     idle->priority = PRIORITY_MAX;  /* Lowest priority */
     idle->policy = SCHED_IDLE;
@@ -266,15 +275,20 @@ static void context_switch(process_t *old, process_t *new) {
     if (old != NULL && old->state == PROC_RUNNING) {
         old->stats.context_switches++;
         
+        /* Don't re-queue idle process */
+        if (old == cpu_data[cpu_id].idle) {
+            /* Idle process is special - don't re-queue */
+            old->state = PROC_RUNNABLE;
+        }
         /* Handle MLFQ queue demotion for normal processes */
-        if (old->policy == SCHED_NORMAL && old != cpu_data[cpu_id].idle) {
+        else if (old->policy == SCHED_NORMAL) {
             /* If time slice expired, demote to lower priority queue */
             if (old->time_slice == 0 && old->queue_level < NUM_QUEUE_LEVELS - 1) {
                 old->queue_level++;
             }
             old->state = PROC_RUNNABLE;
             sched_add(old);  /* Add back to ready queue */
-        } else if (old->policy == SCHED_RR && old != cpu_data[cpu_id].idle) {
+        } else if (old->policy == SCHED_RR) {
             /* RT round-robin - re-add to RT queue */
             old->state = PROC_RUNNABLE;
             sched_add(old);
@@ -297,9 +311,8 @@ static void context_switch(process_t *old, process_t *new) {
         }
         
         /* Perform actual context switch via assembly */
-        if (old != NULL) {
-            swtch(&old->context, &new->context);
-        }
+        /* Always call swtch to load new context, even if old is NULL */
+        swtch(old ? &old->context : NULL, &new->context);
     }
 }
 
@@ -362,6 +375,7 @@ void sched_tick(void) {
                 process_t *p = mlfq_dequeue(&ready_queues[level]);
                 if (p != NULL && p->policy == SCHED_NORMAL) {
                     p->queue_level = 0;  /* Boost to highest queue */
+                    p->time_slice = queue_time_slices[0];  /* Reset time slice */
                     mlfq_enqueue(&ready_queues[0], p);
                 }
             }

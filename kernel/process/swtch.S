@@ -113,9 +113,8 @@ trap_vector_user:
     # Save all registers to kernel stack
     addi sp, sp, -256   # Make space for trap frame
     
-    # Save user registers
+    # Save user registers (skip x2/sp for now)
     sd x1, 0(sp)        # ra
-    sd x2, 8(sp)        # sp (will be fixed later)
     sd x3, 16(sp)       # gp
     sd x4, 24(sp)       # tp
     sd x5, 32(sp)       # t0
@@ -154,7 +153,7 @@ trap_vector_user:
     mv a0, sp           # Pass trap frame as argument
     call trap_handler
     
-    # Restore user registers
+    # Restore user registers (except sp)
     ld x1, 0(sp)
     ld x3, 16(sp)
     ld x4, 24(sp)
@@ -186,14 +185,15 @@ trap_vector_user:
     ld x30, 232(sp)
     ld x31, 240(sp)
     
-    # Restore user sp
-    ld x2, 8(sp)
+    # Load user sp into temporary register
+    ld t0, 8(sp)
     
     # Restore kernel stack
     addi sp, sp, 256
     
-    # Swap back to user stack
-    csrrw sp, sscratch, sp
+    # Swap back: put user sp into sp, save kernel sp to sscratch
+    csrw sscratch, sp
+    mv sp, t0
     
     # Return to user mode
     sret
