@@ -8,6 +8,7 @@
 extern void switch_context(context_t *old, context_t *new);
 
 #define MAX_PROCESSES 64
+#define RT_TIME_SLICE 10  /* Time slice for real-time Round-Robin */
 
 /* Multi-Level Feedback Queue (MLFQ) structure */
 typedef struct mlfq {
@@ -208,15 +209,21 @@ void sched_add(process_t *proc) {
     return;
   }
 
+  /* Check scheduling policy - don't add idle processes */
+  if (proc->policy == SCHED_IDLE) {
+    return;
+  }
+
   proc->state = PROC_RUNNABLE;
   
   /* Check scheduling policy */
   if (proc->policy == SCHED_FIFO || proc->policy == SCHED_RR) {
     /* Real-time process */
+    if (rt_queue.size >= MAX_PROCESSES) {
+      printf("[SCHED] ERROR: RT queue full, cannot add process %s\n", proc->name);
+      return;
+    }
     rt_queue_enqueue(&rt_queue, proc);
-  } else if (proc->policy == SCHED_IDLE) {
-    /* Don't queue idle process */
-    return;
   } else {
     /* Normal process - add to MLFQ based on dynamic priority */
     int level = 0;
@@ -227,6 +234,12 @@ void sched_add(process_t *proc) {
       if (level >= MLFQ_LEVELS) {
         level = MLFQ_LEVELS - 1;
       }
+    }
+    
+    /* Check if queue has space */
+    if (mlfq_levels[level].size >= MAX_PROCESSES) {
+      printf("[SCHED] ERROR: MLFQ level %d full, cannot add process %s\n", level, proc->name);
+      return;
     }
     
     /* Set time slice based on level */
@@ -269,6 +282,7 @@ static void context_switch(process_t *old, process_t *new) {
   
   /* Update statistics for old process */
   if (old != NULL && old->state == PROC_RUNNING) {
+    /* Only increment context switches when switching away from running process */
     old->stats.context_switches++;
     
     /* Add old process back to ready queue if still runnable */
@@ -283,7 +297,8 @@ static void context_switch(process_t *old, process_t *new) {
     new->state = PROC_RUNNING;
     new->last_cpu = current_cpu_id;
     new->stats.last_run_tick = global_tick;
-    new->stats.context_switches++;
+    
+    /* Note: context_switches for new process incremented when it's switched away from */
     
     cpu->current_proc = new;
 
@@ -338,9 +353,24 @@ void sched_tick(void) {
       
       /* If time slice expired, demote to lower priority level */
       if (proc->time_slice == 0) {
-        /* Increase dynamic priority (lower priority) */
-        if (proc->dynamic_priority < PRIO_NORMAL_MAX) {
-          proc->dynamic_priority += 5;
+        /* Calculate current MLFQ level */
+        int current_level = 0;
+        if (proc->dynamic_priority >= PRIO_NORMAL_MIN) {
+          int prio_range = proc->dynamic_priority - PRIO_NORMAL_MIN;
+          current_level = (prio_range * MLFQ_LEVELS) / (PRIO_NORMAL_MAX - PRIO_NORMAL_MIN + 1);
+          if (current_level >= MLFQ_LEVELS) {
+            current_level = MLFQ_LEVELS - 1;
+          }
+        }
+        
+        /* Move to next lower level if possible */
+        if (current_level < MLFQ_LEVELS - 1) {
+          /* Calculate priority for next level */
+          int next_level = current_level + 1;
+          int prio_per_level = (PRIO_NORMAL_MAX - PRIO_NORMAL_MIN + 1) / MLFQ_LEVELS;
+          proc->dynamic_priority = PRIO_NORMAL_MIN + (next_level * prio_per_level);
+          
+          /* Ensure we don't exceed max */
           if (proc->dynamic_priority > PRIO_NORMAL_MAX) {
             proc->dynamic_priority = PRIO_NORMAL_MAX;
           }
@@ -356,7 +386,7 @@ void sched_tick(void) {
       }
       
       if (proc->time_slice == 0) {
-        proc->time_slice = 10; /* Reset time slice */
+        proc->time_slice = RT_TIME_SLICE; /* Reset time slice */
         sched_yield();
       }
     }
@@ -388,19 +418,22 @@ void sched_set_policy(process_t *proc, sched_policy_t policy) {
   
   proc->policy = policy;
   
-  /* Set appropriate priority range */
+  /* Set appropriate priority range and time slice */
   if (policy == SCHED_FIFO || policy == SCHED_RR) {
     /* Real-time: priority 0-99 */
-    if (proc->priority >= PRIO_NORMAL_MIN) {
-      proc->priority = PRIO_RT_MAX / 2;  /* Default RT priority */
+    if (proc->priority >= PRIO_NORMAL_MIN || proc->priority > PRIO_RT_MAX) {
+      /* Priority is outside RT range, set to default RT priority */
+      proc->priority = PRIO_RT_MAX / 2;  /* Default RT priority (50) */
       proc->dynamic_priority = proc->priority;
     }
-    proc->time_slice = 10;
-    proc->total_time_slice = 10;
+    
+    proc->time_slice = RT_TIME_SLICE;
+    proc->total_time_slice = RT_TIME_SLICE;
   } else if (policy == SCHED_IDLE) {
     proc->priority = PRIO_MAX;
     proc->dynamic_priority = PRIO_MAX;
   }
+  /* For SCHED_NORMAL, keep existing priority */
 }
 
 /* Get process statistics */
