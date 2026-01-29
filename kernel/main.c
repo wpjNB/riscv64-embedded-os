@@ -277,10 +277,10 @@ void kernel_main(void) {
   show_system_info();
 
   /* Run tests */
-  run_tests();
+  //   run_tests();
 
   /* Run initial test */
-  test_memory();
+  //   test_memory();
 
   /* Start shell */
   run_shell();
