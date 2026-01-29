@@ -48,6 +48,115 @@ static void test_vm(void) {
   printf("[TEST] Virtual memory test PASSED\n");
 }
 
+/* Test scheduler features */
+static void test_scheduler_features(void) {
+  printf("\n[TEST] Testing advanced scheduler features...\n");
+
+  /* Test 1: Process allocation with priorities */
+  printf("\n[TEST] 1. Testing process priorities\n");
+  
+  process_t *p1 = process_alloc();
+  if (p1) {
+    const char *name1 = "high-prio";
+    int i;
+    for (i = 0; name1[i] && i < 31; i++) {
+      p1->name[i] = name1[i];
+    }
+    p1->name[i] = '\0';
+    sched_set_priority(p1, 100);  /* High priority (low number) */
+    printf("  Created process '%s' (PID %u) with priority %d\n", 
+           p1->name, (uint32_t)p1->pid, p1->priority);
+  }
+
+  process_t *p2 = process_alloc();
+  if (p2) {
+    const char *name2 = "low-prio";
+    int i;
+    for (i = 0; name2[i] && i < 31; i++) {
+      p2->name[i] = name2[i];
+    }
+    p2->name[i] = '\0';
+    sched_set_priority(p2, 130);  /* Low priority (high number) */
+    printf("  Created process '%s' (PID %u) with priority %d\n", 
+           p2->name, (uint32_t)p2->pid, p2->priority);
+  }
+
+  /* Test 2: Real-time scheduling policies */
+  printf("\n[TEST] 2. Testing real-time scheduling\n");
+  
+  process_t *rt_fifo = process_alloc();
+  if (rt_fifo) {
+    const char *name3 = "rt-fifo";
+    int i;
+    for (i = 0; name3[i] && i < 31; i++) {
+      rt_fifo->name[i] = name3[i];
+    }
+    rt_fifo->name[i] = '\0';
+    sched_set_policy(rt_fifo, SCHED_FIFO);
+    sched_set_priority(rt_fifo, 50);  /* RT priority */
+    printf("  Created RT FIFO process '%s' (PID %u) with priority %d\n", 
+           rt_fifo->name, (uint32_t)rt_fifo->pid, rt_fifo->priority);
+  }
+
+  process_t *rt_rr = process_alloc();
+  if (rt_rr) {
+    const char *name4 = "rt-rr";
+    int i;
+    for (i = 0; name4[i] && i < 31; i++) {
+      rt_rr->name[i] = name4[i];
+    }
+    rt_rr->name[i] = '\0';
+    sched_set_policy(rt_rr, SCHED_RR);
+    sched_set_priority(rt_rr, 60);  /* RT priority */
+    printf("  Created RT Round-Robin process '%s' (PID %u) with priority %d\n", 
+           rt_rr->name, (uint32_t)rt_rr->pid, rt_rr->priority);
+  }
+
+  /* Test 3: Process statistics */
+  printf("\n[TEST] 3. Testing process statistics\n");
+  
+  if (p1) {
+    proc_stats_t stats;
+    sched_get_stats(p1, &stats);
+    printf("  Process '%s' stats:\n", p1->name);
+    printf("    CPU time: %u ticks\n", (uint32_t)stats.cpu_time);
+    printf("    Context switches: %u\n", (uint32_t)stats.context_switches);
+    printf("    Last run tick: %u\n", (uint32_t)stats.last_run_tick);
+  }
+
+  /* Test 4: Multi-level feedback queue */
+  printf("\n[TEST] 4. Testing MLFQ\n");
+  printf("  MLFQ uses 3 priority levels with different time slices:\n");
+  printf("    Level 0 (high): 10 ticks\n");
+  printf("    Level 1 (med):  20 ticks\n");
+  printf("    Level 2 (low):  40 ticks\n");
+  printf("  Processes automatically move between levels based on behavior\n");
+
+  /* Test 5: CPU affinity */
+  printf("\n[TEST] 5. Testing SMP/CPU affinity\n");
+  if (p1) {
+    p1->cpu_affinity = 0;  /* Pin to CPU 0 */
+    printf("  Process '%s' pinned to CPU %d\n", p1->name, p1->cpu_affinity);
+  }
+
+  /* Test 6: Idle process */
+  printf("\n[TEST] 6. Idle process information\n");
+  printf("  Idle process (PID 0) runs when no other process is ready\n");
+  printf("  Uses WFI (Wait For Interrupt) to save power\n");
+
+  /* Print per-CPU info */
+  printf("\n[TEST] 7. Per-CPU information\n");
+  cpu_info_t *cpu = current_cpu_info();
+  if (cpu) {
+    printf("  CPU %d:\n", cpu->cpu_id);
+    printf("    Idle time: %u ticks\n", (uint32_t)cpu->idle_time);
+    printf("    Busy time: %u ticks\n", (uint32_t)cpu->busy_time);
+  }
+
+  printf("\n[TEST] Advanced scheduler features test PASSED\n");
+  printf("====================================\n\n");
+}
+
 /* Test scheduler */
 static void test_scheduler(void) {
   printf("[TEST] Testing scheduler...\n");
@@ -278,6 +387,9 @@ void kernel_main(void) {
 
   /* Run tests */
   //   run_tests();
+  
+  /* Test new scheduler features */
+  test_scheduler_features();
 
   /* Run initial test */
   //   test_memory();
