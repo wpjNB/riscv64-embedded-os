@@ -60,7 +60,7 @@ static void test_scheduler(void) {
     }
     
     int i;
-    for (i = 0; i < 5 && p1->name[i] = "test1"[i]; i++);
+    for (i = 0; i < 5 && (p1->name[i] = "test1"[i]); i++);
     p1->name[i] = '\0';
     printf("[TEST] Allocated process: %s (PID %lu)\n", p1->name, p1->pid);
     
@@ -70,7 +70,7 @@ static void test_scheduler(void) {
         return;
     }
     
-    for (i = 0; i < 5 && p2->name[i] = "test2"[i]; i++);
+    for (i = 0; i < 5 && (p2->name[i] = "test2"[i]); i++);
     p2->name[i] = '\0';
     printf("[TEST] Allocated process: %s (PID %lu)\n", p2->name, p2->pid);
     

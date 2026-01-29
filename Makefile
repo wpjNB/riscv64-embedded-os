@@ -23,7 +23,7 @@ CFLAGS += -I$(KERNEL_DIR) -I$(DRIVER_DIR) -Iinclude
 
 # Linker flags
 LDFLAGS := -nostdlib -static
-LDFLAGS += -Wl,--gc-sections
+LDFLAGS += --gc-sections
 
 # Qemu settings
 QEMU := qemu-system-riscv64
